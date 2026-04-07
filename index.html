@@ -45,6 +45,12 @@
       <input id="signup-pw" type="password" placeholder="6자 이상"/>
       <button class="btn" onclick="signup()">가입하기</button>
     </div>
+    <div id="reset-form" style="display:none;margin-top:1rem">
+  <label>이메일</label>
+  <input id="reset-email" type="email" placeholder="name@email.com"/>
+  <button class="btn" onclick="resetPassword()">재설정 링크 보내기</button>
+</div>
+<p style="text-align:center;margin-top:1rem;font-size:12px;color:#6e665a;cursor:pointer" onclick="toggleReset()">비밀번호를 잊으셨나요?</p>
     <div id="msg" class="msg"></div>
   </div>
 
@@ -84,6 +90,19 @@
       el.textContent=m
       el.className='msg'+(err?' err':'')
     }
+    function toggleReset(){
+  const f=document.getElementById('reset-form')
+  f.style.display=f.style.display==='none'?'block':'none'
+}
+
+async function resetPassword(){
+  const email=document.getElementById('reset-email').value
+  const {error}=await sb.auth.resetPasswordForEmail(email,{
+    redirectTo: location.origin+'/setup.html'
+  })
+  if(error) return showMsg(error.message, true)
+  showMsg('재설정 링크를 이메일로 보냈어요 📧')
+}
   </script>
 </body>
 </html>
