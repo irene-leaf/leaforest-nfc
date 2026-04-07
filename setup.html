@@ -62,6 +62,12 @@
     <input id="avatar_url" placeholder="https://..."/>
 
     <button class="btn" onclick="save()">저장하기</button>
+    <button class="btn-out" onclick="showPwChange()" id="pw-toggle">비밀번호 변경</button>
+<div id="pw-change" style="display:none;margin-top:1rem">
+  <label>새 비밀번호</label>
+  <input id="new-pw" type="password" placeholder="6자 이상"/>
+  <button class="btn" onclick="changePw()">변경하기</button>
+</div>
     <button class="btn-out" onclick="logout()">로그아웃</button>
     <div id="msg" class="msg"></div>
 
@@ -136,6 +142,17 @@
       el.textContent=m
       el.style.color=err?'#e07070':'#7ab87a'
     }
+    function showPwChange(){
+  const d=document.getElementById('pw-change')
+  d.style.display=d.style.display==='none'?'block':'none'
+}
+
+async function changePw(){
+  const pw=document.getElementById('new-pw').value
+  const {error}=await sb.auth.updateUser({password:pw})
+  if(error) return showMsg('오류: '+error.message,true)
+  showMsg('비밀번호가 변경되었어요! ✓')
+}
 
     init()
   </script>
