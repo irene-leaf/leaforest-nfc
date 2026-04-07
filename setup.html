@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>내 명함 설정 · Leaforest</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:#0f1a12;color:#e8dfc8;min-height:100vh;padding:2rem 1rem}
+    .logo{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:#c8b478;letter-spacing:0.15em;margin-bottom:2rem;text-align:center}
+    .wrap{max-width:480px;margin:0 auto}
+    h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:#c8b478;margin-bottom:1.5rem}
+    label{display:block;font-size:11px;letter-spacing:0.1em;color:#6e665a;text-transform:uppercase;margin-bottom:5px}
+    input,textarea{width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(200,180,120,0.2);border-radius:8px;color:#e8dfc8;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:1rem}
+    input:focus,textarea:focus{border-color:rgba(200,180,120,0.5)}
+    textarea{resize:vertical;min-height:80px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .colors{display:flex;gap:8px;margin-bottom:1rem}
+    .chip{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all 0.2s}
+    .chip.on{border-color:#c8b478;transform:scale(1.15)}
+    .btn{width:100%;padding:12px;background:linear-gradient(135deg,#c8b478,#a89050);border:none;border-radius:10px;color:#0f1a12;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:0.5rem}
+    .btn-out{width:100%;padding:10px;background:transparent;border:1px solid rgba(200,180,120,0.2);border-radius:10px;color:#6e665a;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;margin-top:0.75rem}
+    .msg{font-size:12px;text-align:center;margin-top:1rem;color:#7ab87a}
+    .url-box{margin-top:1.5rem;padding:14px 16px;background:rgba(200,180,120,0.06);border:1px solid rgba(200,180,120,0.2);border-radius:10px}
+    .url-label{font-size:10px;letter-spacing:0.1em;color:#6e665a;text-transform:uppercase;margin-bottom:6px}
+    .url-val{font-size:13px;color:#c8b478;word-break:break-all}
+    .url-hint{font-size:11px;color:#4a4540;margin-top:6px}
+    .divider{font-size:10px;letter-spacing:0.12em;color:#3a3530;text-transform:uppercase;margin:1.5rem 0 1rem;padding-bottom:6px;border-bottom:1px solid rgba(200,180,120,0.08)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">Leaforest</div>
+    <h2>내 명함 설정</h2>
+
+    <div class="divider">기본 정보</div>
+    <div class="row">
+      <div><label>이름</label><input id="name" placeholder="홍길동"/></div>
+      <div><label>직함</label><input id="title" placeholder="Designer"/></div>
+    </div>
+    <label>회사 / 브랜드</label>
+    <input id="company" placeholder="회사명"/>
+    <label>소개</label>
+    <textarea id="bio" placeholder="간단한 자기소개"></textarea>
+
+    <div class="divider">연락처</div>
+    <label>전화번호</label>
+    <input id="phone" placeholder="010-0000-0000"/>
+    <label>이메일</label>
+    <input id="email" type="email" placeholder="name@email.com"/>
+    <div class="row">
+      <div><label>웹사이트</label><input id="website" placeholder="mysite.com"/></div>
+      <div><label>인스타그램</label><input id="instagram" placeholder="@username"/></div>
+    </div>
+
+    <div class="divider">커스터마이즈</div>
+    <label>포인트 색상</label>
+    <div class="colors" id="colors"></div>
+    <label>프로필 이미지 URL (선택)</label>
+    <input id="avatar_url" placeholder="https://..."/>
+
+    <button class="btn" onclick="save()">저장하기</button>
+    <button class="btn-out" onclick="logout()">로그아웃</button>
+    <div id="msg" class="msg"></div>
+
+    <div class="url-box" id="url-box" style="display:none">
+      <div class="url-label">내 명함 URL (NFC에 저장할 주소)</div>
+      <div class="url-val" id="url-val"></div>
+      <div class="url-hint">이 주소를 NFC Tools 앱으로 키링에 저장하세요</div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://vmofuiiobcgigzpjvsxz.supabase.co'
+    const SUPABASE_KEY = 'sb_publishable_8E3ECbPXm6VfQQPsIde-3A_4eDtqNt_vmofuiiobcgigzpjvsxz'
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    const COLORS = ['#2d6a4f','#1a4a6e','#6a2d4f','#6a4f2d','#2d4a6a','#4f6a2d']
+    let accent = COLORS[0]
+    let userId = null
+
+    const colWrap = document.getElementById('colors')
+    COLORS.forEach(c=>{
+      const d=document.createElement('div')
+      d.className='chip'+(c===accent?' on':'')
+      d.style.background=c
+      d.onclick=()=>{accent=c;document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));d.classList.add('on')}
+      colWrap.appendChild(d)
+    })
+
+    async function init(){
+      const {data:{session}}=await sb.auth.getSession()
+      if(!session){location.href='index.html';return}
+      userId=session.user.id
+      const {data}=await sb.from('cards').select('*').eq('user_id',userId).single()
+      if(data){
+        ['name','title','company','bio','phone','email','website','instagram','avatar_url'].forEach(k=>{
+          if(data[k]) document.getElementById(k).value=data[k]
+        })
+        if(data.accent){
+          accent=data.accent
+          document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'))
+          colWrap.children[COLORS.indexOf(accent)]?.classList.add('on')
+        }
+      }
+      showUrl()
+    }
+
+    function showUrl(){
+      const base = location.hostname==='localhost'?'http://localhost:3000':location.origin
+      document.getElementById('url-val').textContent = base+'/card.html?id='+userId
+      document.getElementById('url-box').style.display='block'
+    }
+
+    async function save(){
+      const fields={name,title,company,bio,phone,email,website,instagram,avatar_url}
+      const row={}
+      Object.keys(fields).forEach(k=>row[k]=document.getElementById(k).value)
+      row.accent=accent
+      row.user_id=userId
+
+      const {error}=await sb.from('cards').upsert(row,{onConflict:'user_id'})
+      if(error) return showMsg('오류: '+error.message,true)
+      showMsg('저장 완료! ✓')
+    }
+
+    async function logout(){
+      await sb.auth.signOut()
+      location.href='index.html'
+    }
+
+    function showMsg(m,err=false){
+      const el=document.getElementById('msg')
+      el.textContent=m
+      el.style.color=err?'#e07070':'#7ab87a'
+    }
+
+    init()
+  </script>
+</body>
+</html>

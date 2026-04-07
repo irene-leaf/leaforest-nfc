@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Leaforest · 전자명함</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:#0f1a12;color:#e8dfc8;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem}
+    .logo{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:#c8b478;letter-spacing:0.15em;margin-bottom:0.5rem;text-align:center}
+    .sub{font-size:13px;color:#6e665a;text-align:center;margin-bottom:3rem}
+    .card{background:rgba(255,255,255,0.04);border:1px solid rgba(200,180,120,0.2);border-radius:16px;padding:2rem;width:100%;max-width:380px}
+    .tab-row{display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:8px;padding:4px;margin-bottom:1.5rem}
+    .tab{flex:1;padding:8px;border:none;background:transparent;color:#6e665a;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;border-radius:6px;transition:all 0.2s}
+    .tab.active{background:rgba(200,180,120,0.18);color:#c8b478}
+    label{display:block;font-size:11px;letter-spacing:0.1em;color:#6e665a;text-transform:uppercase;margin-bottom:6px}
+    input{width:100%;padding:10px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(200,180,120,0.2);border-radius:8px;color:#e8dfc8;font-family:'DM Sans',sans-serif;font-size:14px;outline:none;margin-bottom:1rem}
+    input:focus{border-color:rgba(200,180,120,0.5)}
+    .btn{width:100%;padding:12px;background:linear-gradient(135deg,#c8b478,#a89050);border:none;border-radius:10px;color:#0f1a12;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;margin-top:0.5rem}
+    .msg{font-size:12px;text-align:center;margin-top:1rem;color:#7ab87a}
+    .err{color:#e07070}
+  </style>
+</head>
+<body>
+  <div class="logo">Leaforest</div>
+  <div class="sub">NFC 전자명함 서비스</div>
+  <div class="card">
+    <div class="tab-row">
+      <button class="tab active" onclick="showTab('login')">로그인</button>
+      <button class="tab" onclick="showTab('signup')">회원가입</button>
+    </div>
+    <div id="login-form">
+      <label>이메일</label>
+      <input id="login-email" type="email" placeholder="name@email.com"/>
+      <label>비밀번호</label>
+      <input id="login-pw" type="password" placeholder="••••••••"/>
+      <button class="btn" onclick="login()">로그인</button>
+    </div>
+    <div id="signup-form" style="display:none">
+      <label>이메일</label>
+      <input id="signup-email" type="email" placeholder="name@email.com"/>
+      <label>비밀번호</label>
+      <input id="signup-pw" type="password" placeholder="6자 이상"/>
+      <button class="btn" onclick="signup()">가입하기</button>
+    </div>
+    <div id="msg" class="msg"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://vmofuiiobcgigzpjvsxz.supabase.co'
+    const SUPABASE_KEY = 'sb_publishable_8E3ECbPXm6VfQQPsIde-3A_4eDtqNt_vmofuiiobcgigzpjvsxz'
+    const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    sb.auth.getSession().then(({data})=>{
+      if(data.session) location.href='setup.html'
+    })
+
+    function showTab(t){
+      document.getElementById('login-form').style.display = t==='login'?'block':'none'
+      document.getElementById('signup-form').style.display = t==='signup'?'block':'none'
+      document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',(t==='login'&&i===0)||(t==='signup'&&i===1)))
+    }
+
+    async function login(){
+      const email=document.getElementById('login-email').value
+      const password=document.getElementById('login-pw').value
+      const {error}=await sb.auth.signInWithPassword({email,password})
+      if(error) return showMsg(error.message, true)
+      location.href='setup.html'
+    }
+
+    async function signup(){
+      const email=document.getElementById('signup-email').value
+      const password=document.getElementById('signup-pw').value
+      const {error}=await sb.auth.signUp({email,password})
+      if(error) return showMsg(error.message, true)
+      showMsg('가입 완료! 이메일을 확인해주세요 📧')
+    }
+
+    function showMsg(m, err=false){
+      const el=document.getElementById('msg')
+      el.textContent=m
+      el.className='msg'+(err?' err':'')
+    }
+  </script>
+</body>
+</html>
