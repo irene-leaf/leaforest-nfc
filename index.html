@@ -98,7 +98,7 @@
 async function resetPassword(){
   const email=document.getElementById('reset-email').value
   const {error}=await sb.auth.resetPasswordForEmail(email,{
-    redirectTo: 'https://fastidious-bunny-d6a386.netlify.app/setup.html'
+    redirectTo: 'https://leaforest-nfc.vercel.app/setup.html'
   })
   if(error) return showMsg(error.message, true)
   showMsg('재설정 링크를 이메일로 보냈어요 📧')
