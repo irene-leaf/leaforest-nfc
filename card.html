@@ -52,14 +52,18 @@
       return p.length===1?p[0][0].toUpperCase():(p[0][0]+p[p.length-1][0]).toUpperCase()
     }
 
+    function openWebsite(url){
+      if(!url) return
+      if(url.startsWith('http')) window.open(url)
+      else window.open('https://'+url)
+    }
+
     async function load(){
       const params=new URLSearchParams(location.search)
       const id=params.get('id')
       if(!id){show('notfound');return}
-
       const {data,error}=await sb.from('cards').select('*').eq('user_id',id).single()
       if(error||!data){show('notfound');return}
-
       const acc=data.accent||'#2d6a4f'
       const card=document.getElementById('card')
       card.innerHTML=`
@@ -82,13 +86,17 @@
             <div class="icon" style="background:${acc}33">✉️</div>
             <div class="link-text"><div class="link-label">이메일</div><div class="link-val">${data.email}</div></div>
             <div class="arrow">›</div></button>`:''}
-          site?`<button class="link" onclick="openWebsite('${data.website}')">
+          ${data.website?`<button class="link" onclick="openWebsite('${data.website}')">
             <div class="icon" style="background:${acc}33">🌐</div>
             <div class="link-text"><div class="link-label">웹사이트</div><div class="link-val">${data.website}</div></div>
             <div class="arrow">›</div></button>`:''}
-          ${data.instagram?`<button class="link" onclick="window.open('https://instagram.com/${data.instagram.replace('@','')}')">
+          ${data.instagram?`<button class="link" onclick="openWebsite('https://instagram.com/${data.instagram.replace('@','')}')">
             <div class="icon" style="background:${acc}33">📸</div>
             <div class="link-text"><div class="link-label">인스타그램</div><div class="link-val">${data.instagram}</div></div>
+            <div class="arrow">›</div></button>`:''}
+          ${data.linkedin?`<button class="link" onclick="openWebsite('${data.linkedin.startsWith('http')?data.linkedin:'https://'+data.linkedin}')">
+            <div class="icon" style="background:${acc}33">💼</div>
+            <div class="link-text"><div class="link-label">LinkedIn</div><div class="link-val">${data.linkedin}</div></div>
             <div class="arrow">›</div></button>`:''}
         </div>
         <div class="actions">
@@ -97,7 +105,7 @@
         </div>
         <div class="branding">Leaforest · 전자명함</div>
       `
-      window._cardData = data
+      window._cardData=data
       show('card')
     }
 
@@ -116,18 +124,12 @@
       else{navigator.clipboard.writeText(location.href);alert('링크가 복사되었어요!')}
     }
 
-   function show(id){
-  document.getElementById('loading').style.display='none'
-  document.getElementById(id).style.display='block'
-}
+    function show(id){
+      document.getElementById('loading').style.display='none'
+      document.getElementById(id).style.display='block'
+    }
 
-function openWebsite(url){
-  if(!url) return
-  if(url.startsWith('http')) window.open(url)
-  else window.open('https://'+url)
-}
-
-load()
+    load()
   </script>
 </body>
 </html>
