@@ -82,7 +82,7 @@
             <div class="icon" style="background:${acc}33">✉️</div>
             <div class="link-text"><div class="link-label">이메일</div><div class="link-val">${data.email}</div></div>
             <div class="arrow">›</div></button>`:''}
-          ${data.website?`<button class="link" onclick="window.open('https://${data.website}')">
+          ${data.website?`<button class="link" onclick="window.open(data.website.startsWith('http')?data.website:'https://'+data.website)">
             <div class="icon" style="background:${acc}33">🌐</div>
             <div class="link-text"><div class="link-label">웹사이트</div><div class="link-val">${data.website}</div></div>
             <div class="arrow">›</div></button>`:''}
