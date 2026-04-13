@@ -82,7 +82,7 @@
             <div class="icon" style="background:${acc}33">✉️</div>
             <div class="link-text"><div class="link-label">이메일</div><div class="link-val">${data.email}</div></div>
             <div class="arrow">›</div></button>`:''}
-          ${data.website?`<button class="link" onclick="window.open(data.website.startsWith('http')?data.website:'https://'+data.website)">
+          site?`<button class="link" onclick="openWebsite('${data.website}')">
             <div class="icon" style="background:${acc}33">🌐</div>
             <div class="link-text"><div class="link-label">웹사이트</div><div class="link-val">${data.website}</div></div>
             <div class="arrow">›</div></button>`:''}
@@ -116,12 +116,18 @@
       else{navigator.clipboard.writeText(location.href);alert('링크가 복사되었어요!')}
     }
 
-    function show(id){
-      document.getElementById('loading').style.display='none'
-      document.getElementById(id).style.display='block'
-    }
+   function show(id){
+  document.getElementById('loading').style.display='none'
+  document.getElementById(id).style.display='block'
+}
 
-    load()
+function openWebsite(url){
+  if(!url) return
+  if(url.startsWith('http')) window.open(url)
+  else window.open('https://'+url)
+}
+
+load()
   </script>
 </body>
 </html>
