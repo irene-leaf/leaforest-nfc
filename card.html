@@ -74,6 +74,7 @@
       const depts=[data.dept,data.dept2,data.dept3,data.dept4].filter(Boolean)
 
       const card=document.getElementById('card')
+      const addrHtml = data.address ? '<div class="address-box"><div class="address-label">주소</div><div class="address-val">'+data.address.replace(/\n/g,'<br>')+'</div></div>' : ''
       card.innerHTML=`
         <div class="header">
           <div class="header-bg" style="background:linear-gradient(180deg,${acc} 0%,transparent 100%)"></div>
@@ -93,7 +94,7 @@
           ${titles.map(t=>`<div class="job">${t}</div>`).join('')}
         </div>
         ${data.bio?`<div class="bio">${data.bio}</div>`:''}
-        ${data.address?`<div class="address-box"><div class="address-label">주소</div><div class="address-val">${(data.address||'').replace(/\n/g,'<br>')}</div>
+        ${addrHtml}
         <div class="links">
           ${data.phone?`<button class="link" onclick="window.location='tel:${data.phone}'">
             <div class="icon" style="background:${acc}33">📱</div>
