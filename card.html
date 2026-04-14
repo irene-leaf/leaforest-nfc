@@ -129,7 +129,10 @@
 
     function saveContact(){
       const d=window._cardData
-      const vcard=`BEGIN:VCARD\nVERSION:3.0\nFN:${d.name||''}\nTITLE:${[d.title,d.title2,d.title3,d.title4].filter(Boolean).join(' / ')}\nORG:${d.company||''}\nTEL;TYPE=CELL:${d.phone||''}\nTEL;TYPE=WORK:${d.phone_company||''}\nTEL;TYPE=FAX:${d.phone_fax||''}\nEMAIL:${d.email||''}\nURL:${d.website||''}\nADR:;;${d.address||''};;;;\nEND:VCARD`
+      const fullName = d.name || ''
+      const lastName = d.last_name || ''
+      const firstName = d.first_name || ''
+      const vcard=`BEGIN:VCARD\nVERSION:3.0\nFN:${fullName}\nN:${lastName};${firstName};;;\nTITLE:${[d.title,d.title2,d.title3,d.title4].filter(Boolean).join(' / ')}\nORG:${d.company||''}\nTEL;TYPE=CELL:${d.phone||''}\nTEL;TYPE=WORK:${d.phone_company||''}\nTEL;TYPE=FAX:${d.phone_fax||''}\nEMAIL:${d.email||''}\nURL:${d.website||''}\nADR:;;${d.address||''};;;;\nEND:VCARD`
       const blob=new Blob([vcard],{type:'text/vcard'})
       const a=document.createElement('a')
       a.href=URL.createObjectURL(blob)
