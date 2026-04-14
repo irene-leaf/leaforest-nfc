@@ -16,8 +16,8 @@
     .avatar{width:80px;height:80px;border-radius:50%;margin:0 auto 1rem;border:2px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:2rem;color:#fff;position:relative;overflow:hidden;background:rgba(255,255,255,0.1)}
     .avatar img{width:100%;height:100%;object-fit:cover}
     .name{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:#fff;margin-bottom:4px;position:relative}
+    .company{font-size:15px;color:rgba(255,255,255,0.75);margin-top:4px;position:relative;font-weight:500;letter-spacing:0.03em}
     .job{font-size:12px;color:rgba(255,255,255,0.5);letter-spacing:0.06em;position:relative;margin-top:2px}
-   .company{font-size:15px;color:rgba(255,255,255,0.75);margin-top:4px;position:relative;font-weight:500;letter-spacing:0.03em}
     .bio{margin:0 1.25rem 1.25rem;padding:14px;background:rgba(255,255,255,0.05);border-radius:12px;font-size:13px;color:rgba(255,255,255,0.55);line-height:1.7}
     .links{padding:0 1.25rem;display:flex;flex-direction:column;gap:8px}
     .link{display:flex;align-items:center;gap:12px;padding:12px 14px;background:rgba(255,255,255,0.06);border-radius:12px;cursor:pointer;border:none;width:100%;text-align:left}
@@ -35,7 +35,6 @@
     .branding{text-align:center;margin-top:2rem;font-size:10px;color:rgba(255,255,255,0.15);letter-spacing:0.12em}
     .not-found{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;color:#6e665a;font-size:14px;gap:8px}
     .not-found span{font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:#c8b478}
-    .section-gap{height:8px}
   </style>
 </head>
 <body>
@@ -68,30 +67,36 @@
       const {data,error}=await sb.from('cards').select('*').eq('user_id',id).single()
       if(error||!data){show('notfound');return}
 
-      const acc=data.accent||'#2d6a4f'
+      const acc = data.accent || '#2d6a4f'
+      const titles = [data.title,data.title2,data.title3,data.title4].filter(Boolean)
+      const depts = [data.dept,data.dept2,data.dept3,data.dept4].filter(Boolean)
 
-      const titles=[data.title,data.title2,data.title3,data.title4].filter(Boolean)
-      const depts=[data.dept,data.dept2,data.dept3,data.dept4].filter(Boolean)
+      // 이름 표시: 한글 있으면 한글, 영어면 First Last
+      const displayName = (()=>{
+        const kr = data.korean_name || ''
+        const first = data.first_name || ''
+        const last = data.last_name || ''
+        if(kr) return kr
+        if(first||last) return (first+' '+last).trim()
+        return data.name || ''
+      })()
 
-      const card=document.getElementById('card')
-      const addrHtml = data.address ? '<div class="address-box"><div class="address-label">주소</div><div class="address-val">'+data.address.replace(/\n/g,'<br>')+'</div></div>' : ''
-      card.innerHTML=`
+      // 주소 줄바꿈 처리
+      const addrHtml = data.address
+        ? '<div class="address-box"><div class="address-label">주소</div><div class="address-val">'+data.address.replace(/\n/g,'<br>')+'</div></div>'
+        : ''
+
+      const card = document.getElementById('card')
+      card.innerHTML = `
         <div class="header">
           <div class="header-bg" style="background:linear-gradient(180deg,${acc} 0%,transparent 100%)"></div>
           <div class="avatar" style="background:linear-gradient(135deg,${acc}cc,${acc}44)">
-            ${data.avatar_url?`<img src="${data.avatar_url}" alt=""/>`:`<span>${initials(data.name)}</span>`}
+            ${data.avatar_url?`<img src="${data.avatar_url}" alt=""/>`:`<span>${initials(displayName)}</span>`}
           </div>
-          <div class="name">${(() => {
-           const kr = data.korean_name || ''
-           const first = data.first_name || ''
-           const last = data.last_name || ''
-           if (kr) return kr  // 한글 이름 있으면 한글 우선
-           if (first || last) return `${first} ${last}`.trim()  // 영어면 First Last 순서
-           return data.name || ''
-         })()}</div>
+          <div class="name">${displayName}</div>
           ${data.company?`<div class="company">${data.company}</div>`:''}
-          ${depts.map(d=>`<div class="job">${d}</div>`).join('')}
           ${titles.map(t=>`<div class="job">${t}</div>`).join('')}
+          ${depts.map(d=>`<div class="job">${d}</div>`).join('')}
         </div>
         ${data.bio?`<div class="bio">${data.bio}</div>`:''}
         ${addrHtml}
@@ -131,20 +136,20 @@
         </div>
         <div class="branding">Leaforest · 전자명함</div>
       `
-      window._cardData=data
+      window._cardData = data
       show('card')
     }
 
     function saveContact(){
-      const d=window._cardData
-      const fullName = d.name || ''
+      const d = window._cardData
+      const fullName = d.korean_name || ((d.first_name||'')+' '+(d.last_name||'')).trim() || d.name || ''
       const lastName = d.last_name || ''
       const firstName = d.first_name || ''
-      const vcard=`BEGIN:VCARD\nVERSION:3.0\nFN:${fullName}\nN:${lastName};${firstName};;;\nTITLE:${[d.title,d.title2,d.title3,d.title4].filter(Boolean).join(' / ')}\nORG:${d.company||''}\nTEL;TYPE=CELL:${d.phone||''}\nTEL;TYPE=WORK:${d.phone_company||''}\nTEL;TYPE=FAX:${d.phone_fax||''}\nEMAIL:${d.email||''}\nURL:${d.website||''}\nADR:;;${d.address||''};;;;\nEND:VCARD`
-      const blob=new Blob([vcard],{type:'text/vcard'})
-      const a=document.createElement('a')
-      a.href=URL.createObjectURL(blob)
-      a.download=(d.name||'contact')+'.vcf'
+      const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${fullName}\nN:${lastName};${firstName};;;\nTITLE:${[d.title,d.title2,d.title3,d.title4].filter(Boolean).join(' / ')}\nORG:${d.company||''}\nTEL;TYPE=CELL:${d.phone||''}\nTEL;TYPE=WORK:${d.phone_company||''}\nTEL;TYPE=FAX:${d.phone_fax||''}\nEMAIL:${d.email||''}\nURL:${d.website||''}\nADR:;;${(d.address||'').replace(/\n/g,' ')};;;;\nEND:VCARD`
+      const blob = new Blob([vcard],{type:'text/vcard'})
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = (fullName||'contact')+'.vcf'
       a.click()
     }
 
