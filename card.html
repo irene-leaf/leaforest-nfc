@@ -81,9 +81,9 @@
             ${data.avatar_url?`<img src="${data.avatar_url}" alt=""/>`:`<span>${initials(data.name)}</span>`}
           </div>
           <div class="name">${data.name||''}</div>
-          ${depts.map(d=>`<div class="job">${d}</div>`).join('')}
-          ${titles.map(t=>`<div class="job">${t}</div>`).join('')}
           ${data.company?`<div class="company">${data.company}</div>`:''}
+          ${titles.map(t=>`<div class="job">${t}</div>`).join('')}
+          ${depts.map(d=>`<div class="job">${d}</div>`).join('')}
         </div>
         ${data.bio?`<div class="bio">${data.bio}</div>`:''}
         ${data.address?`<div class="address-box"><div class="address-label">주소</div><div class="address-val">${data.address}</div></div>`:''}
