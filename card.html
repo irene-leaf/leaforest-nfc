@@ -93,7 +93,7 @@
           ${titles.map(t=>`<div class="job">${t}</div>`).join('')}
         </div>
         ${data.bio?`<div class="bio">${data.bio}</div>`:''}
-        ${data.address?`<div class="address-box"><div class="address-label">주소</div><div class="address-val">${data.address}</div></div>`:''}
+        ${data.address?`<div class="address-box"><div class="address-label">주소</div><div class="address-val">${(data.address||'').replace(/\n/g,'<br>')}</div>
         <div class="links">
           ${data.phone?`<button class="link" onclick="window.location='tel:${data.phone}'">
             <div class="icon" style="background:${acc}33">📱</div>
