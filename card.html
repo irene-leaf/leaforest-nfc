@@ -80,7 +80,14 @@
           <div class="avatar" style="background:linear-gradient(135deg,${acc}cc,${acc}44)">
             ${data.avatar_url?`<img src="${data.avatar_url}" alt=""/>`:`<span>${initials(data.name)}</span>`}
           </div>
-          <div class="name">${data.name||''}</div>
+          <div class="name">${(() => {
+           const kr = data.korean_name || ''
+           const first = data.first_name || ''
+           const last = data.last_name || ''
+           if (kr) return kr  // 한글 이름 있으면 한글 우선
+           if (first || last) return `${first} ${last}`.trim()  // 영어면 First Last 순서
+           return data.name || ''
+         })()}</div>
           ${data.company?`<div class="company">${data.company}</div>`:''}
           ${depts.map(d=>`<div class="job">${d}</div>`).join('')}
           ${titles.map(t=>`<div class="job">${t}</div>`).join('')}
